@@ -1,21 +1,18 @@
 package CsvParser;
 
-import java.io.ObjectStreamClass;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.function.Predicate;
-import java.util.random.RandomGenerator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class test {
     public static void main(String[] args) throws Exception {
-        CsvParser test = new CsvParser("C:\\Users\\jeune\\Documents\\Fac\\COO\\TPs\\CsvParser\\test.csv");
+        CsvParser test = new CsvParser("E:\\ohno\\Documents\\Java2223\\TP1\\test.csv");
         test.readCsvInput();
-/*        for (String str: test.extractColumn(0)
-             ) {
-            System.out.println(str);
-        }*/
+//        for (String str: test.extractColumn(0)
+//             ) {
+//            System.out.println(str);
+//        }
 /*        String[] col = test.extractColumn(0);
         for (String str: col
              ) {
@@ -73,12 +70,37 @@ public class test {
         LinkedList<String[]> input = new LinkedList<>();
         input.add(streamTest);
         input.add(streamTestBis);
-        LinkedList<String[]> res = new LinkedList<>();
+        LinkedList<String> res = new LinkedList<>();
         for (String[] line: input
              ) {
-            Stream<String> filtered = Arrays.stream(line).filter(x-> x.contains("e"));
-            String[] filteredLine = new String[]
-            res.add((String[]) filtered.toArray());
+            Stream<String> filtered = Arrays.stream(line).filter(x-> x.contains("enedis"));
+            filtered.forEach(res::add);
+        }
+        for (String cell: res
+             ) {
+            System.out.println(cell); // <== WORKSSSSS
+        }
+        double max = test.minNumValueInColumn(0);
+        System.out.println(max);
+        Predicate<String> predicate = new Predicate<String>() {
+            @Override
+            public boolean test(String s) {
+                return s.contains("a");
+            }
+        };
+//        LinkedList<String[]> filteredData = test.filterLines(predicate);
+//        for (String[] line: filteredData
+//             ) {
+//            for (String cell: line
+//                 ) {
+//                System.out.print(cell + ";");
+//            }
+//            System.out.println();
+//        }
+        LinkedList<String> filteredDataCells = test.filterCells(predicate);
+        for (String cell: filteredDataCells
+             ) {
+            System.out.println(cell);
         }
 //        Stream<String> filtered = Arrays.stream(streamTest).filter(x -> x.contains("b"));
 //        filtered.forEach(e -> System.out.println(e));

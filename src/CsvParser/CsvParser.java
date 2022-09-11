@@ -1,9 +1,11 @@
 package CsvParser;
 
+import java.awt.desktop.SystemSleepEvent;
 import java.io.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class CsvParser implements AutoCloseable{
     final String SEPARATING_CHAR = ","; //Eventuellement prompt l'utilisateur sur le charactère de séparation
@@ -41,9 +43,14 @@ public class CsvParser implements AutoCloseable{
 
     //Permet l'initialisation du flux de communication
     private void initCsvReader() throws FileNotFoundException {
-        iCsvInitialized = true;
-        inputCsvReader = new BufferedReader(new FileReader(inputCsv));
-        readerIsAtEOF = false;
+        try {
+            inputCsvReader = new BufferedReader(new FileReader(inputCsv));
+            iCsvInitialized = true;
+            readerIsAtEOF = false;
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("File impossible to find ://");
+        }
     }
 
     //Lecture du CSV ligne par ligne
@@ -96,7 +103,7 @@ public class CsvParser implements AutoCloseable{
     //On considère la première ligne comme un entete sans contenu <==
     //pb si jamais la colonne extraite contient des données dont le type n'est pas uniforme (int & string par ex) :((
 
-    public String maxValueInColumn(int col){
+    public String maxStrValueInColumn(int col){
         if (listHasData){
             if(col < nbCols){
                 String[] extractedColumn = extractColumn(col);
@@ -106,12 +113,13 @@ public class CsvParser implements AutoCloseable{
                     if (isSuperiorStrCompareTo(extractedValue.compareTo(max)))
                         max = extractedValue;
                 }
+                return max;
             }
         }
         return null;
     }
 
-    public String minValueInColumn(int col) {
+    public String minStrValueInColumn(int col) {
         if (listHasData){
             if(col < nbCols){
                 String[] extractedColumn = extractColumn(col);
@@ -123,6 +131,48 @@ public class CsvParser implements AutoCloseable{
                     }
                 }
                 return min;
+            }
+        }
+        return null;
+    }
+
+    public Double maxNumValueInColumn(int col){
+        if (listHasData){
+            if(col < nbCols){
+                try{
+                    String[] extractedColumn = extractColumn(col);
+                    double max = Double.parseDouble(extractedColumn[1]);
+                    for (int i = 1; i < extractedColumn.length ; i++){
+                        double extractedValue = Double.parseDouble(extractedColumn[i]);
+                        if (extractedValue > max)
+                            max = extractedValue;
+                    }
+                    return max;
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Mixed data, are you sure you didn't want to use maxStrValueInColumn ?");
+                }
+            }
+        }
+        return null;
+    }
+
+    public Double minNumValueInColumn(int col){
+        if (listHasData){
+            if(col < nbCols){
+                try{
+                    String[] extractedColumn = extractColumn(col);
+                    double min = Double.parseDouble(extractedColumn[1]);
+                    for (int i = 1; i < extractedColumn.length ; i++){
+                        double extractedValue = Double.parseDouble(extractedColumn[i]);
+                        if (extractedValue < min)
+                            min = extractedValue;
+                    }
+                    return min;
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Mixed data input, are you sure you didn't want to use maxStrValueInColumn ?");
+                }
             }
         }
         return null;
@@ -181,7 +231,7 @@ public class CsvParser implements AutoCloseable{
                     if (state) {
                         removedDuplicates.remove(comparedTo);
                         j -= 1; // <== Permet de revenir en arrière sur la verification au cas ou on aurait plusieurs fois la meme instance d'un même élément
-                                //Solution dégueulasse mais marche ?? (Impact sur la compléxité négligeable)
+                                //Solution dégueulasse mais impact sur la compléxité négligeable)
                     }
                 }
             }
@@ -189,22 +239,53 @@ public class CsvParser implements AutoCloseable{
         return removedDuplicates;
     }
 
-//    public LinkedList<String[]> filterData(Predicate predicate) {
-//        LinkedList<String[]> filteredData = new LinkedList<>(importedInput);
-//        for (String[] line: filteredData
-//             ) {
-//            filteredData.remove((String[]) Arrays.stream(line).filter(predicate).toArray()); /// ????????
-//        }
-//        return filteredData;
-//        // !!! Not working : stream.filter returns les éléments vérifiés par le predicat
-//    }
+    public LinkedList<String[]> filterLines(Predicate<String> predicate) {
+        LinkedList<String[]> dataToFilter = new LinkedList<>(importedInput);
+        LinkedList<String[]> filteredData = new LinkedList<>();
+        for (String[] line: dataToFilter
+             ) {
+            Stream<String> streamedData = Arrays.stream(line).filter(predicate);
+            if (streamedData.findAny().isPresent()) {
+                filteredData.add(line);
+            }
+        }
+        return filteredData;
+    }
 
-//    public Object line2object (int line) {
-//        if (inputLineIsValid(line)) {
-//
-//        }
-//    }
+    public LinkedList<String> filterCells(Predicate<String> predicate) {
+        LinkedList<String[]> dataToFilter = new LinkedList<>(importedInput);
+        LinkedList<String> filteredData = new LinkedList<>();
+        for (String[] line: dataToFilter
+        ) {
+            Stream<String> streamedData = Arrays.stream(line).filter(predicate);
+            streamedData.forEach(filteredData::add); // :: == method reference == methode liée a la classe directement
+        }
+        return filteredData;
+    }
 
+    /*
+    Deux cas de figures : soit il faut un objet de type OBJECT dont toutes les classe en Java héritent
+                          soit il faut un objet a part entière et donc une classe avec son lot de méthodes
+     */
+
+    // Cas 1 <== On retourne un objet de type OBJECT
+    public Object line2object (int line) {
+        if (inputLineIsValid(line)) {
+            Object lineObject = extractLine(line);
+            return lineObject;
+        }
+        return null;
+    }
+
+    //Cas 2 <== On retourne un objet de type LineObject locale au package
+    public LineObject line2LineObject(int line) {
+        if (inputLineIsValid(line)) {
+            String[] header = extractLine(0);
+            String[] wantedLine = extractLine(line);
+            return new LineObject(header,wantedLine);
+        }
+        return null;
+    }
 
 
     //POUR PERMETTRE L'UTILISATION D'UN BUFFER ET EVITER LA CREATION REDONDANTE EN MEMOIRE DE STRUCTURES DE DONNEES
