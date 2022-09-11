@@ -22,7 +22,7 @@ public class test {
             System.out.println(str);
         }*/
         /*System.out.println(test.minValueInColumn(0));*/
-/*        System.out.println(test.minValueInColumn(2));*/
+        /*        System.out.println(test.minValueInColumn(2));*/
 //        String[][] extract = test.extractArrayOfData(1,1);
 /*        for (String[] arr: extract
              ) {
@@ -32,7 +32,7 @@ public class test {
             }
             System.out.print("\n");
         }*/
-        LinkedList<String[]> remDup = test.removeDuplicates();
+/*        LinkedList<String[]> remDup = test.removeDuplicates();
 //        LinkedList<String[]> filteredData = test.filterData(x -> );
         StringBuilder l1str = new StringBuilder();
         String[] l1 = test.extractLine(0);
@@ -55,7 +55,7 @@ public class test {
         Stream<Object> toz = objBuilder.build();
         //On manipule comment un objet wshhhhhhh aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaah
 //        Object toz = objBuilder.build();
-        System.out.println(toz);
+        System.out.println(toz);*/
 //        System.out.println(l1f);
 //        System.out.println(l2f);
 //        System.out.println(l1f.hashCode() == l2f.hashCode());
@@ -68,6 +68,20 @@ public class test {
 //            }
 //            System.out.print("\n");
 //        }
-
+        String[] streamTest = {"abc", "bbc", "aef"};
+        String[] streamTestBis = {"edf", "enedis","total"};
+        LinkedList<String[]> input = new LinkedList<>();
+        input.add(streamTest);
+        input.add(streamTestBis);
+        LinkedList<String[]> res = new LinkedList<>();
+        for (String[] line: input
+             ) {
+            Stream<String> filtered = Arrays.stream(line).filter(x-> x.contains("e"));
+            String[] filteredLine = new String[]
+            res.add((String[]) filtered.toArray());
+        }
+//        Stream<String> filtered = Arrays.stream(streamTest).filter(x -> x.contains("b"));
+//        filtered.forEach(e -> System.out.println(e));
+//        LinkedList<String[]> res = filtered.toList();
     }
 }
